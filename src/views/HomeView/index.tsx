@@ -54,9 +54,9 @@ export const HomeView: FC = ({}) => {
             <h1 className="mb-5 pb-8 text-5xl">Templates:</h1>
             <ul className="text-left leading-10">
               <li className="mb-5">
-                <Link href="/gallery">
+                <Link href="/ci_gallery">
                   <a className="text-4xl font-bold hover:underline">
-                    🏞 -- NFT Gallery
+                    🏞 -- CI NFT Gallery
                   </a>
                 </Link>
               </li>
