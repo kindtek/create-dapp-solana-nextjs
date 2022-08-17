@@ -1,104 +1,62 @@
 import Link from "next/link";
-import { FC, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { FC, useState, useEffect } from "react";
+
+import { fetchJSON, fetchNftJSON } from "utils/fetchJSON";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { Metadata, MetadataAccount, Metaplex } from "@metaplex-foundation/js"
+import { MetaplexMetadata } from "@nfteyez/sol-rayz-react/node_modules/@nfteyez/sol-rayz/dist/utils";
+
 // import {
 //   resolveToWalletAddrress, // this is misspelled but it works. just gonna leave it
 //   getParsedNftAccountsByOwner,
 // } from "@nfteyez/sol-rayz-react/node_modules/@nfteyez/sol-rayz";
-import { useWalletNfts, NftTokenAccount } from "@nfteyez/sol-rayz-react";
-import { useConnection } from "@solana/wallet-adapter-react";
+import { useWalletNfts, NftTokenAccount, WalletResult } from "@nfteyez/sol-rayz-react";
+// import { useConnection } from "@solana/wallet-adapter-react";
 
 import { Loader, SolanaLogo, SelectAndConnectWalletButton } from "components";
 import { NftCard } from "./NftCard";
 import styles from "./index.module.css";
-const walletPublicKeyOwner = "ENdwKrjZicGvRYa5T9FUnNyiYHCTdT3covgtaf7ac6op";
-const walletPublicKeyButts = "57G2mwfM83VNKFNdrvMwTDJAo1xhoDSw6Wp5WyruRdyG";
-const walletPublicKeyBoobs = "63DCfJUUqe9ANLCZnTr487NaQMsgqrCtARAfVWhHfSAa";
-const walletPublicKeyFaces = "CCcKY9KX14tpNWx82nH911WYhrdzkdVsFtkFT1vPkaZo";
-
+import React from 'react'
+// import Link from 'next/link'
+import Head from "next/head";
+import { concat, extendWith } from "lodash";
+import { PublicKey } from "@solana/web3.js";
+import { waitUntilSymbol } from "next/dist/server/web/spec-compliant/fetch-event";
+import { walletPublicKeys } from "config/index.config.js";
+import { filterMappedNfts, useWalletFilterMapNfts } from "utils/fetchAggregate";
 
 export const CI_GalleryView: FC = ({}) => {
-  const { connection } = useConnection();
-  const [walletToParsePublicKey, setWalletToParsePublicKey] =
-    useState<string>(walletPublicKeyOwner);
-  // const [walletToParsePublicKeyButts, setWalletToParsePublicKeyButts] =
-  //   useState<string>(walletPublicKeyButts);
-  // const [walletToParsePublicKeyBoobs, setWalletToParsePublicKeyBoobs] =
-  //   useState<string>(walletPublicKeyBoobs);
-  // const [walletToParsePublicKeyFaces, setWalletToParsePublicKeyFaces] =
-  //   useState<string>(walletPublicKeyFaces);
 
-  const { publicKey: publicKey } = useWallet();
-
+  /* const { connection } = useConnection();
+  const [walletToParsePublicKey, setWalletToParsePublicKey] = useState<string>(walletPublicKeyOwner); */
+  //const { connection } = useConnection();
+  
+  //const { connection } = useConnection();
+  /* const [walletToParsePublicKey, setWalletToParsePublicKey] = useState<string>(walletPublicKeys.walletDefault);
+  const {publicKey: publicKey} = useWallet();
   const { nfts, isLoading, error } = useWalletNfts({
     publicAddress: walletToParsePublicKey,
-    connection,
+    // connection,
   });
-
-  // const { nfts_butts, isLoadingButts, errorButts } = useWalletNfts({
-  //   publicAddress: walletPublicKeyButts,
-  //   connection,
-  // });
-
-  // const { nfts_boobs, isLoadingBoobs, errorBoobs } = useWalletNfts({
-  //   publicAddress: walletPublicKeyBoobs,
-  //   connection,
-  // });
-
-  // const { nfts_faces, isLoadingFaces, errorFaces } = useWalletNfts({
-  //   publicAddress: walletPublicKeyFaces,
-  //   connection,
-  // });
-
-  var nfts_owned_ci = new Array();
-  var nfts_owned_ci_butts = new Array();
-  var nfts_owned_ci_boobs = new Array();
-  var nfts_owned_ci_faces = new Array();
-
-  nfts.forEach((nft: any) => {
-    //console.log("nft uauth", nft.updateAuthority)
-    if (nft.updateAuthority == walletPublicKeyButts)
-    {
-      nfts_owned_ci_butts.push(nft);
-      //console.log("butt uauth", nft)
-    }
-    else if(nft.updateAuthority == walletPublicKeyBoobs)
-    {
-      nfts_owned_ci_boobs.push(nft);
-      //console.log("boob uauth", nft)
-    }
-    else if(nft.updateAuthority == walletPublicKeyFaces)
-    {
-      nfts_owned_ci_faces.push(nft);
-      //console.log("face uauth", nft)
-    }
-    // nfts_butts.forEach((nft_butt: any) => {
-    //   if (JSON.stringify(nft) == JSON.stringify(nft_butt))
-    //     nfts_owned_ci_boobs.push(nft);
-    // });
-    // nfts_boobs.forEach((nft_boob: any) => {
-    //   if (JSON.stringify(nft) == JSON.stringify(nft_boob))
-    //     nfts_owned_ci_boobs.push(nft);
-    // });
-    // nfts_faces.forEach((nft_face: any) => {
-    //   if (JSON.stringify(nft) == JSON.stringify(nft_face))
-    //     nfts_owned_ci_boobs.push(nft);
-    // });
-  });
-
   
-  const nfts_ci = nfts_owned_ci_butts.concat(nfts_owned_ci_boobs, nfts_owned_ci_faces);
-  //nfts =  nfts_owned_ci;
-  console.log("nfts_owned_ci_butts", nfts_owned_ci_butts);
-  console.log("nfts_owned_ci_boobs", nfts_owned_ci_boobs);
-  console.log("nfts_owned_ci_faces", nfts_owned_ci_faces);
-  console.log("nfts_owned_ci", nfts_owned_ci);
+    
 
-  console.log("nfts_ci", nfts_ci);
-  // console.log("nfts_butts", nfts_butts);
-  // console.log("nfts_boobs", nfts_boobs);
-  // console.log("nfts_faces", nfts_faces);
+  const mappedNfts = CI_mapFilter(nfts)
+  .then((async () => {
+    const value = await CI_mapFilter(nfts);
+    console.info("value: ",value);
+  })()).catch(console.error) */
+
+  const {connection} = useConnection();
+  const [walletToParsePublicKey, setWalletToParsePublicKey] = useState<string>(walletPublicKeys.Default);
+  const {publicKey: publicKey} = useWallet();
+  const {nfts, isLoading, error} = useWalletNfts({
+    publicAddress: walletPublicKeys.Default,
+  });
+  useWalletFilterMapNfts(nfts);
+  const mappedNfts = filterMappedNfts;
+
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -190,7 +148,7 @@ export const CI_GalleryView: FC = ({}) => {
                 <div className="my-10">
                   {error ? (
                     <div>
-                      <h1>Error Occures</h1>
+                      <h1>OOps..</h1>
                       {(error as any)?.message}
                     </div>
                   ) : null}
@@ -201,7 +159,7 @@ export const CI_GalleryView: FC = ({}) => {
                     </div>
                   ) : (
 
-                    <NftList nfts={nfts_ci} error={error} />
+                    <NftCIList nfts={mappedNfts} error={error} />
                   )}
                 </div>
               </div>
@@ -218,7 +176,12 @@ type NftListProps = {
   error?: Error;
 };
 
-const NftList = ({ nfts, error }: NftListProps) => {
+export type NftCIListProps = {
+  nfts: MetaplexMetadata[];
+  error?: Error;
+};
+
+export function NftCIList({nfts, error }: NftCIListProps) {
   if (error) {
     return null;
   }
@@ -228,14 +191,95 @@ const NftList = ({ nfts, error }: NftListProps) => {
       <div className="text-center text-2xl pt-16">
         No NFTs found in this wallet
       </div>
-    );
+    )
   }
-
+  let i = 0;
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
       {nfts?.map((nft) => (
-        <NftCard key={nft.mint} details={nft} onSelect={() => {}} />
+        <NftCard key={`${nft}_${i++}`} details={nft} onSelect={() => {}} />
       ))}
+      {/* {async () => {
+        return await nfts?.map((nft) => (
+        <NftCard key={`${nft.name}_${i++}`} details={nft} onSelect={() => { } } />
+      ))
+      } } */}
     </div>
   );
 };
+
+
+
+//export 
+ function fetchCICollection(walletNfts:WalletResult) :{ci_nfts:MetaplexMetadata[], ci_error:Error} {
+    
+  // reset global arrays
+  let filteredNfts:WalletResult = [];
+  let populatedNfts:MetaplexMetadata[] = [];
+
+  // build local nft db
+  walletNfts?.forEach((walletNft:WalletResult) => {
+    if (walletNft.updateAuthority == walletPublicKeys.UACI1)
+    {
+         filteredNfts.push(walletNft);
+    }
+    else if(walletNft.updateAuthority == walletPublicKeys.UACI2)
+    {
+         filteredNfts.push(walletNft);
+    }
+    else if(walletNft.updateAuthority == walletPublicKeys.UACI3)
+    {
+         filteredNfts.push(walletNft);
+    }
+    else if(walletNft.updateAuthority == walletPublicKeys.UACI4)
+    {
+         filteredNfts.push(walletNft);
+    }
+  });
+
+  let ci_nfts!:MetaplexMetadata[];
+  let error!:Error;
+
+  walletNfts = filteredNfts;
+
+
+  populatedNfts = filteredNfts.map( (nft:WalletResult) => /*console.info("datauri", nft.data.uri);*/ 
+        fetchNftJSON(nft.data.uri)
+        .then((nftMeta:MetaplexMetadata) => {
+          //console.info("nfts(g00d):",nftMeta);
+          //debugger;
+          return nftMeta; // [valueOfPromise1, valueOfPromise2, ...]
+        })
+        .catch((nftMeta:MetaplexMetadata) => {
+          //console.info("nfts(err0r):",nftMeta);
+          return nftMeta;  // rejectReason of any first rejected promise
+        })
+        .finally(() => {
+          //console.info("nfts(f1nally):", populatedNfts);
+          return nft;
+          // return {ci_nfts:nftMeta, ci_error: error};
+        })
+      );
+  
+
+
+  return {ci_nfts:populatedNfts, ci_error:error};
+
+  const allPromise = Promise.all(populatedNfts = filteredNfts.map( (nft:WalletResult) => { return fetchNftJSON(nft.data.uri) }));  
+  
+  allPromise.then(populatedNfts => {
+    console.info("nfts(g00d):",populatedNfts);
+    //debugger;
+    return {ci_nfts:populatedNfts, ci_error: error}; // [valueOfPromise1, valueOfPromise2, ...]
+  }).catch(ci_error => {
+    console.info("nfts(err0r):",populatedNfts);
+    return {ci_nfts:populatedNfts, ci_error};  // rejectReason of any first rejected promise
+  }).finally(() => {
+    console.info("nfts(f1nally):",populatedNfts);
+    return {ci_nfts:populatedNfts, ci_error: error};
+  });
+  console.info("nfts(else0):",populatedNfts);
+  return {ci_nfts:populatedNfts, ci_error: error};
+
+}
+
